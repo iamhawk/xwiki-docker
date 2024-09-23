@@ -17,7 +17,6 @@
 # Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 # 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 # ---------------------------------------------------------------------------
-version: '2'
 networks:
   bridge:
     driver: bridge
@@ -41,7 +40,13 @@ services:
     # Provide a name instead of an auto-generated id for xwiki data (the permanent directory in included in it)
     # configured in the Dockerfile, to make it simpler to identify in 'docker volume ls'.
     volumes:
-      - xwiki-data:/usr/local/xwiki
+      - /opt/xwiki:/usr/local/xwiki
+      - /opt/xwiki/tomcat/webapps/ROOT/WEB-INF:/usr/local/tomcat/webapps/ROOT/WEB-INF/xwiki.cfg
+      - /opt/xwiki/tomcat/webapps/ROOT/WEB-INF:/usr/local/tomcat/webapps/ROOT/WEB-INF/xwiki.properties
+      - /opt/xwiki/tomcat/webapps/ROOT/WEB-INF:/usr/local/tomcat/webapps/ROOT/WEB-INF/hibernate.cfg.xml
+      - /opt/xwiki/tomcat/webapps/ROOT/WEB-INF/observation/remote/:/usr/local/tomcat/webapps/ROOT/WEB-INF/observation/remote/jgroups
+      - /opt/xwiki/tomcat/webapps/ROOT/WEB-INF/classes:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/logback.xml
+      - /opt/xwiki/tomcat/webapps/ROOT/WEB-INF:/usr/local/tomcat/webapps/ROOT/WEB-INF/web.xml
     networks:
       - bridge
   # The container that runs the database (mariadb)
@@ -52,7 +57,7 @@ services:
     # 'docker volume ls'
     # - Provide a SQL script to be executed when the db image starts (to set permissions to create subwikis)
     volumes:
-      - mariadb-data:/var/lib/mysql
+      - /opt/xwiki/mariadb:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
     # Configure the MariaDB database and create a user with provided name/password.
@@ -63,7 +68,8 @@ services:
       - MYSQL_USER=${DB_USER}
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=${DB_DATABASE}
-
+    ports:
+      - "33010:3306"
     # Pass arguments to configure the database
     command:
       - "--character-set-server=utf8mb4"
@@ -74,3 +80,9 @@ services:
 volumes:
   mariadb-data: {}
   xwiki-data: {}
+  xwiki-cfg: {}
+  xwiki-properties: {}
+  xwiki-hibernate: {}
+  xwiki-jgroups: {}
+  xwiki-logback: {}
+  xwiki-webxml: {}
